@@ -285,6 +285,13 @@ class WorkoutActivity : AppCompatActivity()
                 //Once the exercise is finished, if possible start the next one or if not just display "Completed"
                 if(index+1<workout.exercises.size)
                     startWorkout(workout, timerText, exerciseNameText, index+1)
+                else
+                {
+                    exerciseNameText.text = "WORKOUT COMPLETE!"
+                    timerText.visibility = View.INVISIBLE
+                    findViewById<Button>(R.id.pauseButton).visibility = View.INVISIBLE
+                    findViewById<Button>(R.id.resumeButton).visibility = View.INVISIBLE
+                }
             }
         }.start()
     }

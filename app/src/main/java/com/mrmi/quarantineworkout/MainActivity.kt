@@ -21,6 +21,9 @@ class MainActivity : AppCompatActivity()
         val selectedWorkout = v.tag.toString()
         println(selectedWorkout)
 
+        val serviceIntent = Intent(this@MainActivity, OnAppKillService::class.java)
+        this@MainActivity.startService(serviceIntent)
+
         //Launch workout activity with selected workout
         val intent = Intent(this@MainActivity, WorkoutActivity::class.java)
         intent.putExtra("Workout", selectedWorkout)
