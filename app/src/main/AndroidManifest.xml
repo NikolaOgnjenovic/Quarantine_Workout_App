@@ -22,5 +22,4 @@
 
         <service android:name=".OnAppKillService" android:stopWithTask="false" />
     </application>
-
 </manifest>
