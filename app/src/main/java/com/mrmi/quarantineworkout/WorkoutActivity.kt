@@ -1,9 +1,11 @@
 package com.mrmi.quarantineworkout
 
+import android.app.AlertDialog
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.DialogInterface
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -76,7 +78,7 @@ class WorkoutActivity : AppCompatActivity()
     )
     private val tricepsWorkout: WorkoutClass = WorkoutClass(
         listOf("TRICEP EXTENSIONS", "REST", "DIAMOND PUSH-UPS", "REST", "WALK OUT PUSH-UPS", "REST", "TRICEP DIPS"),
-        listOf(5000, 5000, 5000, 5000, 5000, 5000, 5000),
+        listOf(20000, 10000, 20000, 10000, 20000, 10000, 20000),
         listOf(
             Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/tricep_extensions"), Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/rest"),
             Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/diamond_pushup"), Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/rest"),
@@ -103,13 +105,16 @@ class WorkoutActivity : AppCompatActivity()
 
     private lateinit var cdt: CountDownTimer //CountDownTimer object so the timer is disabled once the acitvity is destroyed
 
-    private lateinit var videoView: VideoView
+    private lateinit var videoView: VideoView //Video View which plays exercise videos
 
-    var selectedMode = ""
+    var selectedMode = "" //Day/night system mode used for notification text color
 
-    var currentIndex = 0
+    var currentIndex = 0 //Index of current exercise in selected workout (expanded by number of sets)
 
     private lateinit var newWorkout : WorkoutClass
+
+    private lateinit var timerText : TextView
+    private lateinit var exerciseNameText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -128,8 +133,8 @@ class WorkoutActivity : AppCompatActivity()
         }
 
         //Text Views
-        val timerText: TextView = findViewById(R.id.timerText)
-        val exerciseNameText: TextView = findViewById(R.id.exerciseName)
+        timerText = findViewById(R.id.timerText)
+        exerciseNameText = findViewById(R.id.exerciseName)
         val setNumberWarningText: TextView = findViewById(R.id.setNumberWarning)
         setNumberWarningText.visibility = View.GONE
         val setNumberText: TextView = findViewById(R.id.setNumberText)
@@ -197,10 +202,11 @@ class WorkoutActivity : AppCompatActivity()
 
                 videoView.visibility = View.VISIBLE
                 videoView.start()
+
                 //Enable pause button, disable resume and start button, set isPaused to false, hide set number input field and text, disable minus and plus button and warning text
                 it.visibility = View.GONE
-                pauseButton.visibility = View.VISIBLE
                 isPaused = false
+                pauseButton.visibility = View.VISIBLE
                 resumeButton.visibility = View.GONE
                 setNumberText.visibility = View.GONE
                 setNumberTitleText.visibility = View.GONE
@@ -209,13 +215,11 @@ class WorkoutActivity : AppCompatActivity()
                 setNumberWarningText.visibility = View.GONE
 
                 //Change number of sets to input if input is bigger than 1 and disable input edit text
-                val inputtedSetNumber = (setNumberText.text.toString().toInt())
-                setNumber=inputtedSetNumber
                 println("Number of sets: " + setNumber)
-
+                currentIndex = 0
                 val intent = intent //Get intent from workoutMenu
                 lateinit var currentWorkout: WorkoutClass //Get selected workout
-                when(intent.getStringExtra("Workout")) //Check the workout given in the intent and start it
+                when(intent.getStringExtra("Workout")) //Check the workout given in the intent and assign it to currentWorkout
                 {
                     "legs" -> currentWorkout = legWorkout
                     "shoulders" -> currentWorkout = shouldersWorkout
@@ -227,22 +231,22 @@ class WorkoutActivity : AppCompatActivity()
                 }
                 newWorkout = currentWorkout
 
-                //If there is more than 1 set to complete, add 2.5 minute rest between sets and append sets to new workout
+                //If there is more than 1 set to complete, add 2.5 minute rest between sets and append selected workout setNumber-1 times to newWorkout
                 for(set in 2..setNumber)
                 {
                     newWorkout.exercises = newWorkout.exercises + "Rest" + currentWorkout.exercises
-                    newWorkout.exerciseTimes = newWorkout.exerciseTimes + 15000 + currentWorkout.exerciseTimes //Add 2.5 minute rest between sets
+                    newWorkout.exerciseTimes = newWorkout.exerciseTimes + 150000 + currentWorkout.exerciseTimes //Add 2.5 minute rest between sets
                     newWorkout.exerciseVideos = newWorkout.exerciseVideos + Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/rest") + currentWorkout.exerciseVideos
                 }
 
-                //Start new workout (selected workout used setNumber times)
-                startWorkout(newWorkout, timerText, exerciseNameText, currentIndex)
+                //Start new workout (selected workout done setNumber times)
+                startWorkout(newWorkout, currentIndex)
             }
         }
 
         pauseButton.setOnClickListener()
         {
-            // Prevent rapid clicking, using 1 second cooldown between clicks
+            //Prevent rapid clicking, using 1 second cooldown between clicks
             if(SystemClock.elapsedRealtime()-lastButtonClickTime>=1000)
             {
                 lastButtonClickTime = SystemClock.elapsedRealtime().toInt()
@@ -257,7 +261,7 @@ class WorkoutActivity : AppCompatActivity()
 
         resumeButton.setOnClickListener()
         {
-            // Prevent rapid clicking, using 1 second cooldown between clicks
+            //Prevent rapid clicking, using 1 second cooldown between clicks
             if (SystemClock.elapsedRealtime() - lastButtonClickTime >= 1000) {
                 lastButtonClickTime = SystemClock.elapsedRealtime().toInt()
 
@@ -268,27 +272,8 @@ class WorkoutActivity : AppCompatActivity()
                 pauseButton.visibility = View.VISIBLE
 
                 val intent = intent
-                /*(intent.getStringExtra("Workout")) //Check the workout given in the intent and start it
-                {
-                    "legs" -> currentWorkout = legWorkout
-                    "shoulders" -> currentWorkout = shouldersWorkout
-                    "chest" -> currentWorkout = chestWorkout
-                    "biceps" -> currentWorkout = bicepsWorkout
-                    "back" -> currentWorkout = backWorkout
-                    "triceps" -> currentWorkout = tricepsWorkout
-                    "abs" -> currentWorkout = absWorkout
-                }
-                //var newWorkout: WorkoutClass = currentWorkout
-
-                //If there is more than 1 set to complete, add 2.5 minute rest between sets and append sets to new workout
-                //for(set in (setNumber-currentIndex)..setNumber)
-                //{
-                 //   newWorkout.exercises = newWorkout.exercises + "Rest" + currentWorkout.exercises
-                 //   newWorkout.exerciseTimes = newWorkout.exerciseTimes + 150000 + currentWorkout.exerciseTimes //Add 2.5 minute rest between sets
-                //}
-                    */
                 println("Resuming new workout at index: " + currentIndex)
-                startWorkout(newWorkout, timerText, exerciseNameText, currentIndex)
+                startWorkout(newWorkout, currentIndex)
             }
         }
     }
@@ -302,7 +287,22 @@ class WorkoutActivity : AppCompatActivity()
         cdt.cancel()
     }
 
-    private fun startWorkout(workout: WorkoutClass, timerText: TextView, exerciseNameText: TextView, index: Int)
+    //Alert user if he wants to quit the workout on back button press
+    override fun onBackPressed()
+    {
+        if(currentIndex!=newWorkout.exercises.size)
+        {
+            var builder = AlertDialog.Builder(this@WorkoutActivity)
+                .setMessage("Are you sure you want to exit this workout?")
+                .setCancelable(true)
+                .setNegativeButton("No") {DI: DialogInterface, i: Int -> DI.cancel()}
+                .setPositiveButton("Yes") {DI: DialogInterface, i: Int -> finish()}
+            builder.create()
+            builder.show()
+        }
+    }
+
+    private fun startWorkout(workout: WorkoutClass, index: Int)
     {
         val exercise = workout.exercises[index]
         println(exercise)
@@ -326,7 +326,12 @@ class WorkoutActivity : AppCompatActivity()
         {
             override fun onTick(millisUntilFinished: Long)
             {
-                timerText.text = (millisUntilFinished/1000).toString() + "s" //Set timer text to time left
+                //Set timer text to remaining exercise time
+                if(millisUntilFinished>=60000)
+                    timerText.text = (millisUntilFinished/60000).toString() + "m" + ((millisUntilFinished%60000)/1000).toString() + "s"
+                else
+                    timerText.text = (millisUntilFinished/1000).toString() + "s"
+
                 if(isPaused)
                 {
                     println("Paused. Time left: "+ millisUntilFinished)
@@ -354,7 +359,13 @@ class WorkoutActivity : AppCompatActivity()
                         contentView.setTextColor(R.id.notificationTitle, resources.getColor(R.color.colorPrimary))
                     }
 
-                    contentView.setTextViewText(R.id.notificationContent, "Current exercise: " + exercise + ".\nRemaining time: " + millisUntilFinished/1000 + " seconds.")
+                    //Set notification content text to remaining exercise time
+                    var notificationText = "Current exercise: " + exercise + ".\nRemaining time: "
+                    if(millisUntilFinished>=60000)
+                        notificationText += (millisUntilFinished/60000).toString() + " mintues and " + ((millisUntilFinished%60000)/1000).toString() + " seconds."
+                    else
+                        notificationText += (millisUntilFinished/1000).toString() + " seconds."
+                    contentView.setTextViewText(R.id.notificationContent, notificationText)
 
                     notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                     //Using notificationChannel in android versions after and including Oreo
@@ -367,15 +378,15 @@ class WorkoutActivity : AppCompatActivity()
 
                         builder = Notification.Builder(this@WorkoutActivity, channelID)
                             .setContent(contentView)
-                            .setLargeIcon(BitmapFactory.decodeResource(this@WorkoutActivity.resources,  R.drawable.notification_icon))
-                            .setSmallIcon(R.drawable.notification_icon)
+                            .setSmallIcon(R.drawable.notification_image)
+                            .setLargeIcon(BitmapFactory.decodeResource(this@WorkoutActivity.resources,  R.mipmap.ic_launcher))
                     }
                     else
                     {
                         builder = Notification.Builder(this@WorkoutActivity)
                             .setContent(contentView)
-                            .setLargeIcon(BitmapFactory.decodeResource(this@WorkoutActivity.resources,  R.drawable.notification_icon))
-                            .setSmallIcon(R.drawable.notification_icon)
+                            .setSmallIcon(R.drawable.notification_image)
+                            .setLargeIcon(BitmapFactory.decodeResource(this@WorkoutActivity.resources,  R.mipmap.ic_launcher))
                     }
 
                     notificationManager.notify(310, builder.build())
@@ -391,7 +402,7 @@ class WorkoutActivity : AppCompatActivity()
                 if(index+1<workout.exercises.size)
                 {
                     currentIndex++
-                    startWorkout(workout, timerText, exerciseNameText, index+1)
+                    startWorkout(workout, index+1)
                 }
                 else
                 {

@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="64dp"
     android:orientation="horizontal">
 
     <ImageView
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:padding="10dp"
-        android:src="@drawable/ic_launcher_round"
-        app:srcCompat="@drawable/background_image" />
+        android:layout_width = "64dp"
+        android:layout_height = "64dp"
+        android:padding = "10dp"
+        android:src="@mipmap/ic_launcher" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,14 +20,12 @@
             android:id="@+id/notificationTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#7A0101"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/notificationContent"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#7A0101" />
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
 </LinearLayout>
