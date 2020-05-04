@@ -362,7 +362,7 @@ class WorkoutActivity : AppCompatActivity()
                     //Set notification content text to remaining exercise time
                     var notificationText = "Current exercise: " + exercise + ".\nRemaining time: "
                     if(millisUntilFinished>=60000)
-                        notificationText += (millisUntilFinished/60000).toString() + " mintues and " + ((millisUntilFinished%60000)/1000).toString() + " seconds."
+                        notificationText += (millisUntilFinished/60000).toString() + " min. and " + ((millisUntilFinished%60000)/1000).toString() + " seconds."
                     else
                         notificationText += (millisUntilFinished/1000).toString() + " seconds."
                     contentView.setTextViewText(R.id.notificationContent, notificationText)
