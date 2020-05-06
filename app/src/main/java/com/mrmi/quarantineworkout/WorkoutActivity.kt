@@ -74,7 +74,7 @@ class WorkoutActivity : AppCompatActivity()
         mutableListOf(
             Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/back_extension"), Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/back_hyperextension"),
             Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/pulse_rows"), Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/supermans"),
-            Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/reachers"))
+            Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/reachers")) 
     )
     private val tricepsWorkout: WorkoutClass = WorkoutClass(
         mutableListOf("TRICEP EXTENSIONS", "REST", "DIAMOND PUSH-UPS", "REST", "WALK OUT PUSH-UPS", "REST", "TRICEP DIPS"),
@@ -383,7 +383,7 @@ class WorkoutActivity : AppCompatActivity()
                     //Using notificationChannel in android versions after and including Oreo
                     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                     {
-                        notificationChannel = NotificationChannel(channelID, description, NotificationManager.IMPORTANCE_HIGH)
+                        notificationChannel = NotificationChannel(channelID, description, NotificationManager.IMPORTANCE_MIN)
                         notificationChannel.enableVibration(false)
                         notificationManager.createNotificationChannel(notificationChannel)
 
