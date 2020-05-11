@@ -9,6 +9,7 @@ import android.content.DialogInterface
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -69,11 +70,13 @@ class WorkoutActivity : AppCompatActivity()
             Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/push_upright_curl"))
     )
     private val backWorkout: WorkoutClass = WorkoutClass(
-        mutableListOf("BACK EXTENSIONS", "BACK HYPEREXTENSIONS", "PULSE ROWS", "SUPERMANS", "REACHERS"),
-        mutableListOf(30000, 30000, 30000, 30000, 30000),
+        mutableListOf("BACK EXTENSIONS", "REST", "BACK HYPEREXTENSIONS", "REST", "PULSE ROWS", "REST", "SUPERMANS", "REST", "REACHERS"),
+        mutableListOf(30000, 10000, 30000, 10000, 30000, 10000, 30000, 10000, 30000),
         mutableListOf(
-            Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/back_extension"), Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/back_hyperextension"),
-            Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/pulse_rows"), Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/supermans"),
+            Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/back_extension"), Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/rest"),
+            Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/back_hyperextension"), Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/rest"),
+            Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/pulse_rows"), Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/rest"),
+            Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/supermans"), Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/rest"),
             Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/reachers")) 
     )
     private val tricepsWorkout: WorkoutClass = WorkoutClass(
@@ -86,7 +89,7 @@ class WorkoutActivity : AppCompatActivity()
             Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/tricep_dips"))
     )
     private val absWorkout: WorkoutClass = WorkoutClass(
-        mutableListOf("REGULAR CRUNCHES", "PLANK", "LYING KNEE TUCKS", "LEG UP CRUNCHES"),
+        mutableListOf("NORMAL CRUNCHES", "PLANK", "LYING KNEE TUCKS", "LEG UP CRUNCHES"),
         mutableListOf(30000, 90000, 30000, 30000),
         mutableListOf(
             Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/crunches"), Uri.parse("android.resource://com.mrmi.quarantineworkout/raw/plank"),
@@ -143,7 +146,12 @@ class WorkoutActivity : AppCompatActivity()
         //Video view
         videoView = findViewById(R.id.exerciseVideo)
         videoView.visibility = View.GONE
-        videoView.setOnPreparedListener { mp -> mp.isLooping = true }
+        videoView.setOnPreparedListener { mp -> mp.isLooping = true } //Make video loop
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) //Works only in Oreo and above
+        {
+            videoView.setAudioFocusRequest(AudioManager.AUDIOFOCUS_NONE) //Prevent video view from interrupting other apps with audio
+        }
 
         //Buttons and their onClickListeners below
         val startButton: Button = findViewById(R.id.startButton)
@@ -240,7 +248,7 @@ class WorkoutActivity : AppCompatActivity()
                     newWorkout.exercises.addAll(currentWorkout.exercises)
 
                     //Add rest time and next set's exercises timers
-                    newWorkout.exerciseTimes.add(15000)
+                    newWorkout.exerciseTimes.add(150000)
                     newWorkout.exerciseTimes.addAll(currentWorkout.exerciseTimes)
 
                     //Add rest video and next set's exercise videos
@@ -305,7 +313,7 @@ class WorkoutActivity : AppCompatActivity()
     //Alert user if he wants to quit the workout on back button press
     override fun onBackPressed()
     {
-        if(currentIndex!=newWorkout.exercises.size)
+        if(newWorkout.exercises.size!=0 || currentIndex!=newWorkout.exercises.size-1)
         {
             var builder = AlertDialog.Builder(this@WorkoutActivity)
                 .setMessage("Are you sure you want to exit this workout?")
